@@ -69,14 +69,15 @@
 ;; Define and start server
 (serve/servlet
  (lambda (req) (dispatch req))
- #:launch-browser? #f
+ ;; #:launch-browser? #f
  ;; do not quit when the URL is "/quit"
- #:quit? #f
+ ;; #:quit? #f
  #:port port
  #:servlet-path "/"
+ #:listen-ip #f
  ;; capture top-level requests
- #:servlet-regexp #rx""
+ ;; #:servlet-regexp #rx""
  ;; use serve/servlet in a start up script for a Web application, and don’t open
  ;; browser and don't print the DrRacket banner:
- ;; #:command-line? #t
+ #:command-line? #t
  )
