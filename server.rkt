@@ -72,7 +72,7 @@
  #:launch-browser? #f
  ;; do not quit when the URL is "/quit"
  #:quit? #f
- #:port PORT
+ #:port port
  #:servlet-path "/"
  ;; capture top-level requests
  #:servlet-regexp #rx""
