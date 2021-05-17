@@ -76,7 +76,7 @@
  #:servlet-path "/"
  #:listen-ip #f
  ;; capture top-level requests
- ;; #:servlet-regexp #rx""
+ #:servlet-regexp #rx""
  ;; use serve/servlet in a start up script for a Web application, and don’t open
  ;; browser and don't print the DrRacket banner:
  #:command-line? #t
