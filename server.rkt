@@ -1,28 +1,7 @@
 #lang racket
 
+;; See Alexis King's & the forks
 ;; https://github.com/lexi-lambda/racket-sample-heroku-app
-;; (require web-server/servlet
-;;          web-server/servlet-env)
-
-;; (define (start req)
-;;   (response/xexpr
-;;    '(html (head (title "Racket Heroku App"))
-;;           (body (h1 "It works!")))))
-
-;; (define port (if (getenv "PORT")
-;;                  (string->number (getenv "PORT"))
-;;                  8080))
-;; (serve/servlet
-;;  start
-;;  #:servlet-path "/"
-;;  ;; accept connections from external machines
-;;  #:listen-ip #f
-;;  #:port port
-;;  ;; use serve/servlet in a start up script for a Web application, and don’t open
-;;  ;; browser and don't print the DrRacket banner:
-;;  #:command-line? #t)
-
-;; -----------------------------------------------------------------------------
 
 ;; Luis Quintanilla: Building Web Services with Racket
 ;; https://youtu.be/ZvwE6_MMJjM
@@ -47,7 +26,9 @@
 (define (get-values req)
   (response/jsexpr
    (hasheq
-    'values '(1 2 3))))
+    'values '(1 2 3)
+    'ITA ('dates '(4 5 6))
+    )))
 
 (define (post-values req)
   (define get-property
