@@ -1,6 +1,7 @@
 #lang racket
 
-(provide time)
+(provide
+ (all-defined-out))
 
 #|
 (require (for-syntax racket/match))
@@ -22,10 +23,18 @@
      #'(let* [(beg (current-inexact-milliseconds))
               (expr-val stx-expr)
               (end (current-inexact-milliseconds))]
-       (printf "Elapsed time: ~a msecs\n~a\n"
-               (- end beg) expr-val))]))
+         (begin
+           (printf "Elapsed time: ~a msecs\n" (- end beg))
+           expr-val))]))
 
 
+(define (count coll)
+  ((cond
+     [(hash? coll) hash-count]
+     [(list? coll) length]
+     ;; TODO else
+     #;[else] )
+   coll))
 ;; Usage
 #;(require racket/sequence)
 #;(time (sequence-fold + 0 (in-range #e1e7)))
