@@ -1,5 +1,8 @@
 #lang racket
 
+(require
+ (prefix-in r: racket))
+
 (provide
  (all-defined-out))
 
@@ -32,9 +35,14 @@
   ((cond
      [(hash? coll) hash-count]
      [(list? coll) length]
-     ;; TODO else
-     #;[else] )
+     [else (error "coll must be a hash-table or a list")])
    coll))
+
+(define (take n coll)
+  (if (> n (length coll))
+      coll
+      (r:take coll n)))
+
 ;; Usage
 #;(require racket/sequence)
 #;(time (sequence-fold + 0 (in-range #e1e7)))
