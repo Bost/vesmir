@@ -27,8 +27,8 @@
   (response/jsexpr
    (hasheq
     'values '(1 2 3)
-    'ITA ('dates '(4 5 6))
-    )))
+    'ITA (hasheq
+          'dates '(4 5 6)))))
 
 (define (post-values req)
   (define get-property
