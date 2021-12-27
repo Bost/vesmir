@@ -48,25 +48,32 @@
                             (url->path/static
                              (struct-copy url u [path (cdr (url-path u))])))))
 
+;; the '/app/app/' is set by the buildpack
+;; See:
+;; https://github.com/lexi-lambda/heroku-buildpack-racket/blob/master/README.md#running
+;; `heroku run bash`
+(define root-path
+  (if (getenv "RUNTIME_ENV")
+      "/app/app/"
+      (path->string (current-directory))))
+
+(log-info "[log-info] root-path: ~a\n" root-path)
+(printf "[printf] root-path: ~a\n" root-path)
 
 (define-values (dispatch req)
   (dispatch-rules
    [("") #:method "get" homepage]
    ;; serving static content - see https://stackoverflow.com/q/37846248
    [("screen.css") #:method "get" (λ (_)
-                                    (file-response 200 #"OK" "screen.css"))]
+                                    (file-response 200 #"OK"
+                                                   (string-append
+                                                    root-path
+                                                    "static/screen.css")))]
    [else (error "Route does not exist")]))
 
 (define port (if (getenv "PORT")
                  (string->number (getenv "PORT"))
                  8000))
-
-(define root-path
-  (if (getenv "RUNTIME_ENV")
-      "/app/" ;; TODO this is a hack
-      (path->string (current-directory))))
-
-(printf "root-path: ~a\n" root-path)
 
 (serve/servlet
  (lambda (req) (dispatch req))
