@@ -57,7 +57,9 @@
       "/app/app/"
       (path->string (current-directory))))
 
-(log-info "[log-info] root-path: ~a\n" root-path)
+;; log-info doesn't work
+#;(log-info "[log-info] root-path: ~a\n" root-path)
+;; TODO root-path on heroku is just '/app/' WTF?
 (printf "[printf] root-path: ~a\n" root-path)
 
 (define-values (dispatch req)
