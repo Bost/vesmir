@@ -61,6 +61,13 @@
                  (string->number (getenv "PORT"))
                  8000))
 
+(define root-path
+  (if (getenv "RUNTIME_ENV")
+      "/app/" ;; TODO this is a hack
+      (path->string (current-directory))))
+
+(printf "root-path: ~a\n" root-path)
+
 (serve/servlet
  (lambda (req) (dispatch req))
  ;; #:launch-browser? #f
@@ -68,7 +75,7 @@
  ;; #:quit? #f
  #:port port
  #:servlet-path "/"
- #:server-root-path (current-directory)
+ #:server-root-path root-path
  #:listen-ip #f
  ;; capture top-level requests
  #:servlet-regexp #rx""
