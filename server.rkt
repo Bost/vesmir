@@ -2,9 +2,8 @@
 
 ;; See https://defn.io/2020/02/12/racket-web-server-guide/
 
-(require (prefix-in fotos: "files.rkt"))
-
 (require net/url
+         (prefix-in fotos: "files.rkt")
          web-server/dispatch
          web-server/servlet
          web-server/servlet-env
@@ -14,32 +13,22 @@
          web-server/dispatchers/filesystem-map
          web-server/http
          web-server/servlet-dispatch
-         web-server/web-server)
+         web-server/web-server
+         web-server/configuration/responders
+         )
 
 
 (define (response/template . content)
   (response/xexpr
    `(html
      (head
-      (link ([href "/static/screen.css"] [rel "stylesheet"])))
+      (link ([href "/screen.css"] [type "text/css"] [rel "stylesheet"])))
      (body
       ,@content))))
 
 (define (homepage req)
   (response/template
-   #;'(h1 "Home")
-   (cons 'div
-         (fotos:tags))
-   #;'(div
-     #;(div "a div in a div")
-     #;(a ([target "_blank"] [href "static/pics/img1.jpeg"])
-        (img ([src "static/pics/img1.jpeg"])))
-     #;(a ([target "_blank"] [href "static/pics/img2.jpeg"])
-        (img ([src "static/pics/img2.jpeg"])))
-
-     #;(a ([target "_blank"] [href "https://vesmir.s3.eu-central-1.amazonaws.com/2021-12-01_Martin/20211222_141930.jpg"])
-        (img ([src "https://vesmir.s3.eu-central-1.amazonaws.com/2021-12-01_Martin/20211222_141930.jpg"])))
-     )))
+   (cons 'div (fotos:tags))))
 
 (define (blog req)
   (response/template '(h1 "Blog")))
@@ -63,7 +52,9 @@
 (define-values (dispatch req)
   (dispatch-rules
    [("") #:method "get" homepage]
-   [("static") #:method "get" static-dispatcher]
+   ;; serving static content - see https://stackoverflow.com/q/37846248
+   [("screen.css") #:method "get" (λ (_)
+                                    (file-response 200 #"OK" "screen.css"))]
    [else (error "Route does not exist")]))
 
 (define port (if (getenv "PORT")
@@ -77,6 +68,7 @@
  ;; #:quit? #f
  #:port port
  #:servlet-path "/"
+ #:server-root-path (current-directory)
  #:listen-ip #f
  ;; capture top-level requests
  #:servlet-regexp #rx""
