@@ -3,8 +3,11 @@
 (define (partial fun . args)
   (lambda x (apply fun (append args x))))
 
+(define martin-dir "2021-12-01_Martin")
+(define krivan-dir "2019-08-Krivan")
+
 ;; > aws s3 ls s3://vesmir/2021-12-01_Martin/
-(define files
+(define files-martin
   '(
     "20211222_141930.jpg"
     "20211222_141940.jpg"
@@ -125,20 +128,100 @@
     "20211226_160958.jpg"
     ))
 
-(define (html-tag fpath)
-  (let* ([path "https://vesmir.s3.eu-central-1.amazonaws.com/2021-12-01_Martin/"]
-         [full-fpath (string-append path fpath)]
-         [thumb-fpath (string-append path "thumbs/" fpath)]
-         [href (list 'href full-fpath)]
-         [src (list 'src thumb-fpath)]
-         [a-attrs (list '[target "_blank"] href)]
-         [img-attrs (list src)]
-         [img (list 'img img-attrs)]
-         [a (list 'a a-attrs img)])
-    a))
-
-(define (tags)
-  (map html-tag files))
+(define files-krivan
+  '(
+    "IMG_20190815_115210.jpg"
+    "IMG_20190815_133347.jpg"
+    ;; "IMG_20190815_133352.jpg"
+    "IMG_20190815_133424.jpg"
+    "IMG_20190815_142555.jpg"
+    "IMG_20190815_142600.jpg"
+    "IMG_20190815_142606.jpg"
+    "IMG_20190815_142612.jpg"
+    "IMG_20190815_144123_1CS.jpg"
+    ;; "IMG_20190815_144123_10CS.jpg"
+    ;; "IMG_20190815_144123_11CS.jpg"
+    ;; "IMG_20190815_144123_12CS.jpg"
+    ;; "IMG_20190815_144123_13CS.jpg"
+    ;; "IMG_20190815_144123_14CS.jpg"
+    ;; "IMG_20190815_144123_15CS.jpg"
+    ;; "IMG_20190815_144123_16CS.jpg"
+    ;; "IMG_20190815_144123_17CS.jpg"
+    ;; "IMG_20190815_144123_18CS.jpg"
+    ;; "IMG_20190815_144123_19CS.jpg"
+    ;; "IMG_20190815_144123_2CS.jpg"
+    ;; "IMG_20190815_144123_20CS.jpg"
+    ;; "IMG_20190815_144123_21CS.jpg"
+    ;; "IMG_20190815_144123_22CS.jpg"
+    ;; "IMG_20190815_144123_23CS.jpg"
+    ;; "IMG_20190815_144123_24CS.jpg"
+    ;; "IMG_20190815_144123_25CS.jpg"
+    ;; "IMG_20190815_144123_26CS.jpg"
+    ;; "IMG_20190815_144123_27CS.jpg"
+    ;; "IMG_20190815_144123_28CS.jpg"
+    ;; "IMG_20190815_144123_29CS.jpg"
+    ;; "IMG_20190815_144123_3CS.jpg"
+    ;; "IMG_20190815_144123_30CS.jpg"
+    ;; "IMG_20190815_144123_31CS.jpg"
+    ;; "IMG_20190815_144123_32CS.jpg"
+    ;; "IMG_20190815_144123_33CS.jpg"
+    ;; "IMG_20190815_144123_34CS.jpg"
+    ;; "IMG_20190815_144123_35CS.jpg"
+    ;; "IMG_20190815_144123_36CS.jpg"
+    ;; "IMG_20190815_144123_37CS.jpg"
+    ;; "IMG_20190815_144123_38CS.jpg"
+    ;; "IMG_20190815_144123_39CS.jpg"
+    ;; "IMG_20190815_144123_4CS.jpg"
+    ;; "IMG_20190815_144123_40CS.jpg"
+    ;; "IMG_20190815_144123_5CS.jpg"
+    ;; "IMG_20190815_144123_6CS.jpg"
+    ;; "IMG_20190815_144123_7CS.jpg"
+    ;; "IMG_20190815_144123_8CS.jpg"
+    ;; "IMG_20190815_144123_9CS.jpg"
+    "IMG_20190815_144133_1CS.jpg"
+    ;; "IMG_20190815_144133_10CS.jpg"
+    ;; "IMG_20190815_144133_11CS.jpg"
+    ;; "IMG_20190815_144133_12CS.jpg"
+    ;; "IMG_20190815_144133_13CS.jpg"
+    ;; "IMG_20190815_144133_14CS.jpg"
+    ;; "IMG_20190815_144133_15CS.jpg"
+    ;; "IMG_20190815_144133_16CS.jpg"
+    ;; "IMG_20190815_144133_17CS.jpg"
+    ;; "IMG_20190815_144133_18CS.jpg"
+    ;; "IMG_20190815_144133_19CS.jpg"
+    ;; "IMG_20190815_144133_2CS.jpg"
+    ;; "IMG_20190815_144133_20CS.jpg"
+    ;; "IMG_20190815_144133_21CS.jpg"
+    ;; "IMG_20190815_144133_22CS.jpg"
+    ;; "IMG_20190815_144133_23CS.jpg"
+    ;; "IMG_20190815_144133_24CS.jpg"
+    ;; "IMG_20190815_144133_25CS.jpg"
+    ;; "IMG_20190815_144133_26CS.jpg"
+    ;; "IMG_20190815_144133_27CS.jpg"
+    ;; "IMG_20190815_144133_28CS.jpg"
+    ;; "IMG_20190815_144133_29CS.jpg"
+    ;; "IMG_20190815_144133_3CS.jpg"
+    ;; "IMG_20190815_144133_30CS.jpg"
+    ;; "IMG_20190815_144133_31CS.jpg"
+    ;; "IMG_20190815_144133_32CS.jpg"
+    ;; "IMG_20190815_144133_33CS.jpg"
+    ;; "IMG_20190815_144133_34CS.jpg"
+    ;; "IMG_20190815_144133_35CS.jpg"
+    ;; "IMG_20190815_144133_36CS.jpg"
+    ;; "IMG_20190815_144133_37CS.jpg"
+    ;; "IMG_20190815_144133_38CS.jpg"
+    ;; "IMG_20190815_144133_4CS.jpg"
+    ;; "IMG_20190815_144133_5CS.jpg"
+    ;; "IMG_20190815_144133_6CS.jpg"
+    ;; "IMG_20190815_144133_7CS.jpg"
+    ;; "IMG_20190815_144133_8CS.jpg"
+    ;; "IMG_20190815_144133_9CS.jpg"
+    "IMG_20190815_144206.jpg"
+    "IMG_20190815_144227.jpg"
+    "IMG_20190815_144306.jpg"
+    "IMG_20190815_145030.jpg"
+    "IMG_20190815_155543.jpg"
+    ))
 
 (provide (all-defined-out))
 #;(provide tags)

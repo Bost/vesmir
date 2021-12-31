@@ -3,7 +3,8 @@
 ;; See https://defn.io/2020/02/12/racket-web-server-guide/
 
 (require net/url
-         (prefix-in fotos: "files.rkt")
+         (prefix-in f: "files.rkt")
+         racket/function
          web-server/dispatch
          web-server/servlet
          web-server/servlet-env
@@ -17,6 +18,19 @@
          web-server/configuration/responders
          )
 
+(define aws-s3 "https://vesmir.s3.eu-central-1.amazonaws.com")
+
+(define (html-tag dir fpath)
+  (let* ([path (string-append aws-s3 "/" dir)]
+         [full-fpath (string-append path "/" fpath)]
+         [thumb-fpath (string-append path "/" "thumbs/" fpath)]
+         [href (list 'href full-fpath)]
+         [src (list 'src thumb-fpath)]
+         [a-attrs (list '[target "_blank"] href)]
+         [img-attrs (list src)]
+         [img (list 'img img-attrs)]
+         [a (list 'a a-attrs img)])
+    a))
 
 (define (response/template . content)
   (response/xexpr
@@ -28,18 +42,22 @@
 
 (define (homepage req)
   (response/template
-   (cons 'div (fotos:tags))))
+   `(div
+     (p (a ([target "_blank"] [href "/martin"]) ,f:martin-dir))
+     (p (a ([target "_blank"] [href "/krivan"]) ,f:krivan-dir)))))
 
-(define (blog req)
-  (response/template '(h1 "Blog")))
+(define (martin req)
+  (response/template
+   `(div
+     ,@(map (curry html-tag f:martin-dir) f:files-martin))))
+
+(define (krivan req)
+  (response/template
+   `(div
+     ,@(map (curry html-tag f:krivan-dir) f:files-krivan))))
 
 (define (not-found req)
   (response/template '(h1 "Not Found")))
-
-(define-values (app reverse-uri)
-  (dispatch-rules
-   [("") homepage]
-   [("blog") blog]))
 
 (define url->path/static (make-url->path "static"))
 
@@ -64,7 +82,9 @@
 
 (define-values (dispatch req)
   (dispatch-rules
-   [("") #:method "get" homepage]
+   [("")       #:method "get" homepage]
+   [("martin") #:method "get" martin]
+   [("krivan") #:method "get" krivan]
    ;; serving static content - see https://stackoverflow.com/q/37846248
    [("screen.css") #:method "get" (λ (_)
                                     (file-response 200 #"OK"
@@ -76,6 +96,8 @@
 (define port (if (getenv "PORT")
                  (string->number (getenv "PORT"))
                  8000))
+
+(printf "[printf] port: ~a\n" port)
 
 (serve/servlet
  (lambda (req) (dispatch req))
