@@ -40,11 +40,22 @@
      (body
       ,@content))))
 
+(define (response/template-wumpus . content)
+  (response/xexpr
+   `(html
+     (head
+      (meta ([http-equiv "content-type"] [content "text/html; charset=utf-8"]))
+      (script ([src "/wumpus.rkt.js"] [type "module"]))
+      (link ([href "/screen.css"] [type "text/css"] [rel "stylesheet"])))
+     (body
+      ,@content))))
+
 (define (homepage req)
   (response/template
    `(div
      (p (a ([target "_blank"] [href "/martin"]) ,f:martin-dir))
-     (p (a ([target "_blank"] [href "/krivan"]) ,f:krivan-dir)))))
+     (p (a ([target "_blank"] [href "/krivan"]) ,f:krivan-dir))
+     (p (a ([target "_blank"] [href "/racket"]) "racket")))))
 
 (define (martin req)
   (response/template
@@ -56,15 +67,12 @@
    `(div
      ,@(map (curry html-tag f:krivan-dir) f:files-krivan))))
 
+(define (wumpus req)
+  (response/template-wumpus
+   `(div "wumpus")))
+
 (define (not-found req)
   (response/template '(h1 "Not Found")))
-
-(define url->path/static (make-url->path "static"))
-
-(define static-dispatcher
-  (files:make #:url->path (lambda (u)
-                            (url->path/static
-                             (struct-copy url u [path (cdr (url-path u))])))))
 
 ;; the '/app/app/' is set by the buildpack
 ;; See:
@@ -80,18 +88,23 @@
 ;; TODO root-path on heroku is just '/app/' WTF?
 (printf "[printf] root-path: ~a\n" root-path)
 
+(define extra-files-paths
+  (list
+   ;; All subdirectories on the paths must be listed here
+   (build-path (string-append root-path "js-build"))
+   (build-path (string-append root-path "js-build/modules"))
+   (build-path (string-append root-path "static"))))
+(printf "[printf] extra-files-paths: ~a\n" extra-files-paths)
+
 (define-values (dispatch req)
   (dispatch-rules
    [("")       #:method "get" homepage]
    [("martin") #:method "get" martin]
    [("krivan") #:method "get" krivan]
-   ;; serving static content - see https://stackoverflow.com/q/37846248
-   [("screen.css") #:method "get" (λ (_)
-                                    (file-response 200 #"OK"
-                                                   (string-append
-                                                    root-path
-                                                    "static/screen.css")))]
-   [else (error "Route does not exist")]))
+   [("racket") #:method "get" wumpus]
+   ;; Don’t include an `else` in the dispatch-rules if serving static files, or
+   ;; else the filesystem server will never see the requests.
+   #;[else (error "Route does not exist.")]))
 
 (define port (if (getenv "PORT")
                  (string->number (getenv "PORT"))
@@ -113,6 +126,8 @@
  ;; use serve/servlet in a start up script for a Web application, and don’t open
  ;; browser and don't print the DrRacket banner:
  #:command-line? #t
+ #:extra-files-paths extra-files-paths
+ #:file-not-found-responder not-found
  )
 
 #;(define stop

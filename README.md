@@ -48,10 +48,12 @@ git push heroku main
 curl --request  GET https://$APP.herokuapp.com/values
 curl --request POST -H 'Content-Type: application/json' -d '{"x":"1", "y":"2"}' \
      https://$APP.herokuapp.com/values
-
 ```
-## Run locally
+
+## Develop / Run locally
 ```fish
+raco pkg install racketscript
+~/.racket/8.3/bin/racks wumpus.rkt
 racket --require server.rkt
 ```
 
