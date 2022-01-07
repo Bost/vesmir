@@ -49,9 +49,9 @@
                [integrity "sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="]
                [crossorigin "anonymous"]))
       #;(script ([src "/wumpus.rkt.js"] [type "module"]))
-      (script ([src "/tetris.rkt.js"] [type "module"]))
+      ;; (script ([src "/tetris.rkt.js"] [type "module"]))
       #;(script ([src "/stub.rkt.js"] [type "module"]))
-      #;(script ([src "/overview.rkt.js"] [type "module"]))
+      (script ([src "/overview.rkt.js"] [type "module"]))
       #;(script ([src "/2048-game.rkt.js"] [type "module"]))
       #;(script ([src "/archery.rkt.js"] [type "module"]))
       (link ([href "/screen.css"] [type "text/css"] [rel "stylesheet"])))
