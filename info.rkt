@@ -4,5 +4,6 @@
 
 (define deps
   '())
+;; package names must be strings
 (define build-deps
-  '())
+  '("racketscript"))
