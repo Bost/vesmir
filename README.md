@@ -55,7 +55,12 @@ curl --request POST -H 'Content-Type: application/json' -d '{"x":"1", "y":"2"}' 
 raco pkg install racketscript
 ~/.racket/8.3/bin/racks wumpus.rkt
 ~/.racket/8.3/bin/racks --force-recompile --skip-arity-checks tetris.rkt
-racket --require server.rkt
+# racket --require server.rkt
+
+raco pkg install
+# raco pkg remove sample-heroku-app
+racket --lib sample-heroku-app/server
+
 ```
 
 ## Test locally

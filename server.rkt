@@ -5,6 +5,7 @@
 (require net/url
          (prefix-in f: "files.rkt")
          racket/function
+         racket/runtime-path
          web-server/dispatch
          web-server/servlet
          web-server/servlet-env
@@ -32,6 +33,9 @@
          [a (list 'a a-attrs img)])
     a))
 
+(define (static-url path) (string-append "/static/" path))
+(define (js-url path) (string-append "/js-build/" path))
+
 (define (response/template . content)
   (response/xexpr
    `(html
@@ -40,21 +44,25 @@
      (body
       ,@content))))
 
+;; TODO siehe https://github.com/lexi-lambda/litpub/blob/2f326c1c0e/util/jsexpr.rkt
 (define (response/template-wumpus . content)
   (response/xexpr
    `(html
      (head
-      (meta ([http-equiv "content-type"] [content "text/html; charset=utf-8"]))
+      (meta ([charset "utf-8"]))
+      #;(meta ([http-equiv "content-type"] [content
+                                          "charset=utf-8"
+                                          #;"text/html; charset=utf-8"]))
       (script ([src "https://code.jquery.com/jquery-3.1.0.min.js"]
                [integrity "sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="]
                [crossorigin "anonymous"]))
       #;(script ([src "/wumpus.rkt.js"] [type "module"]))
-      #;(script ([src "/tetris.rkt.js"] [type "module"]))
+      (script ([src ,(js-url "tetris.rkt.js")] [type "module"]))
       #;(script ([src "/stub.rkt.js"] [type "module"]))
-      (script ([src "/overview.rkt.js"] [type "module"]))
+      #;(script ([src "/overview.rkt.js"] [type "module"]))
       #;(script ([src "/2048-game.rkt.js"] [type "module"]))
       #;(script ([src "/archery.rkt.js"] [type "module"]))
-      (link ([href "/screen.css"] [type "text/css"] [rel "stylesheet"])))
+      (link ([href ,(static-url "screen.css")] [type "text/css"] [rel "stylesheet"])))
      (body
       ,@content))))
 
@@ -77,6 +85,7 @@
 
 (define (wumpus req)
   (response/template-wumpus
+   ;; TEXT/HTML-MIME-TYPE
    `(div "wumpus")))
 
 (define (not-found req)
@@ -94,32 +103,7 @@
 ;; log-info doesn't work
 #;(log-info "[log-info] root-path: ~a\n" root-path)
 ;; TODO root-path on heroku is just '/app/' WTF?
-(printf "[printf] root-path: ~a\n" root-path)
-
-(define extra-files-paths
-  (list
-   ;; All subdirectories on the paths must be listed here
-   (build-path (string-append root-path "js-build"))
-   (build-path (string-append root-path "js-build/cache"))
-   (build-path (string-append root-path "js-build/collects"))
-   (build-path (string-append root-path "js-build/collects/racket"))
-   (build-path (string-append root-path "js-build/collects/racket/private"))
-   (build-path (string-append root-path "js-build/links"))
-   (build-path (string-append root-path "js-build/links/racketscript-compiler"))
-   (build-path (string-append root-path "js-build/links/racketscript-compiler/racketscript"))
-   (build-path (string-append root-path "js-build/links/racketscript-compiler/racketscript/private"))
-   (build-path (string-append root-path "js-build/links/racketscript-extras"))
-   (build-path (string-append root-path "js-build/links/racketscript-extras/racketscript"))
-   (build-path (string-append root-path "js-build/links/racketscript-extras/racketscript/htdp"))
-   (build-path (string-append root-path "js-build/links/racketscript-extras/racketscript/htdp/private"))
-   (build-path (string-append root-path "js-build/links/racketscript-extras/racketscript/private"))
-   (build-path (string-append root-path "js-build/modules"))
-   (build-path (string-append root-path "js-build/runtime"))
-   (build-path (string-append root-path "js-build/runtime/compiled"))
-   (build-path (string-append root-path "js-build/runtime/core"))
-
-   (build-path (string-append root-path "static"))))
-(printf "[printf] extra-files-paths: ~a\n" extra-files-paths)
+;; (printf "[printf] root-path: ~a\n" root-path)
 
 (define-values (dispatch req)
   (dispatch-rules
@@ -131,11 +115,14 @@
    ;; else the filesystem server will never see the requests.
    #;[else (error "Route does not exist.")]))
 
+(define-runtime-path-list public-paths '("js-build" "static"))
+(printf "[printf] public-paths: ~a\n" public-paths)
+
 (define port (if (getenv "PORT")
                  (string->number (getenv "PORT"))
                  8000))
-
 (printf "[printf] port: ~a\n" port)
+
 
 (serve/servlet
  (lambda (req) (dispatch req))
@@ -144,14 +131,14 @@
  ;; #:quit? #f
  #:port port
  #:servlet-path "/"
- #:server-root-path root-path
+ ;; #:server-root-path root-path
  #:listen-ip #f
  ;; capture top-level requests
  #:servlet-regexp #rx""
  ;; use serve/servlet in a start up script for a Web application, and don’t open
  ;; browser and don't print the DrRacket banner:
  #:command-line? #t
- #:extra-files-paths extra-files-paths
+ #:extra-files-paths public-paths
  #:file-not-found-responder not-found
  )
 
