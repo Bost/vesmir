@@ -50,14 +50,16 @@
    `(html
      (head
       (meta ([charset "utf-8"]))
-      #;(meta ([http-equiv "content-type"] [content
+      (meta ([http-equiv "content-type"] [content
                                           "charset=utf-8"
                                           #;"text/html; charset=utf-8"]))
       (script ([src "https://code.jquery.com/jquery-3.1.0.min.js"]
                [integrity "sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="]
                [crossorigin "anonymous"]))
       #;(script ([src "/wumpus.rkt.js"] [type "module"]))
-      (script ([src ,(js-url "tetris.rkt.js")] [type "module"]))
+      (script ([src ,(js-url "tetris.rkt.js")] [type
+                                                "text/javascript"
+                                                #;"module"]))
       #;(script ([src "/stub.rkt.js"] [type "module"]))
       #;(script ([src "/overview.rkt.js"] [type "module"]))
       #;(script ([src "/2048-game.rkt.js"] [type "module"]))
@@ -108,6 +110,7 @@
 (define-values (dispatch req)
   (dispatch-rules
    [("")       #:method "get" homepage]
+   ;; [("js-build") #:method "get" js-build]
    [("martin") #:method "get" martin]
    [("krivan") #:method "get" krivan]
    [("racket") #:method "get" wumpus]

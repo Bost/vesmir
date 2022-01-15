@@ -53,10 +53,8 @@ curl --request POST -H 'Content-Type: application/json' -d '{"x":"1", "y":"2"}' 
 ## Develop / Run locally
 ```fish
 raco pkg install racketscript
-# find ~/.local -type f -name racks
-set bracks ~/.local/share/racket/8.3/bin/racks
-# $bracks wumpus.rkt
-$bracks --force-recompile --skip-arity-checks tetris.rkt
+# racks wumpus.rkt
+racks --force-recompile --skip-arity-checks tetris.rkt
 # racket --require server.rkt
 
 raco pkg install
