@@ -1,3 +1,6 @@
+body {
+    color: red;
+}
 img {
     border: 1px solid #ddd; /* Gray border */
     border-radius: 4px;  /* Rounded border */
