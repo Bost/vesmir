@@ -109,6 +109,9 @@
    ;; server will never see the requests.
    #;[else (error "Route does not exist:" req)]))
 
+;; on Heroku, the printf strings will be displayed only after(!) shutting down
+;; the app: heroku ps:scale web=0 --app $APP
+
 ;; (define-runtime-path-list static-files-root '("./"))
 (define static-files-root (list root-path))
 (printf "[printf] static-files-root ~a\n" static-files-root)
