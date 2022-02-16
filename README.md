@@ -41,6 +41,7 @@ heroku config:set RACKET_VERSION=8.3 --app $APP
 # heroku config:set BOT_TOKEN=<bot-token>
 git remote add heroku https://git.heroku.com/$APP.git
 git push heroku main
+# deployment progress - see Papertail https://dashboard.heroku.com/apps/$APP
 ```
 
 ## Test Heroku
