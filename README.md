@@ -41,6 +41,7 @@ heroku config:set RACKET_VERSION=8.3 --app $APP
 # heroku config:set BOT_TOKEN=<bot-token>
 git remote add heroku https://git.heroku.com/$APP.git
 git push heroku main
+# deployment progress - see Papertail https://dashboard.heroku.com/apps/$APP
 ```
 
 ## Test Heroku
@@ -65,9 +66,9 @@ racket --lib sample-heroku-app/server
 
 ## Test locally
 ```fish
-curl --request  GET http://localhost:8080/values
-curl --request POST -H 'Content-Type: application/json' -d '{"x":"1", "y":"2"}' \
-     http://localhost:8080/values
+curl --request GET http://localhost:8080/values
+curl --request POST --header 'Content-Type: application/json' \
+     --data '{"x":"1", "y":"2"}' http://localhost:8080/values
 ```
 
 ## Development

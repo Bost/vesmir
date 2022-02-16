@@ -2,10 +2,13 @@
 ;; Tetris
 ;;
 ;; The left & right arrows move the falling block
-;; The down arrow drops the current block
-;; The "a" key rotates the current block
-;;
+;; The space key drops the current block
+;; The up & down arrows rotates the current block
 ;; From: Nguyen et al. Soft Contract Verification. 2014 ICFP.
+
+;; this is a video game that uh is programmed by first-year students at
+;; northeastern using the how to design programs pedagogy which features
+;; prominently the use of contracts uh in designing programs
 
 (require racket/list racket/bool)
 
@@ -292,6 +295,8 @@
 ;; ghost-blocks : World -> BSet
 ;; Gray blocks representing where the current tetra would land.
 (define (ghost-blocks w)
+  '()
+  #;
   (tetra-blocks (tetra-change-color (world-tetra (world-jump-down w))
                                     'gray)))
 
@@ -300,10 +305,13 @@
 (define (world-key-move w k)
   (cond [(equal? k "left") (world-move neg-1 0 w)]
         [(equal? k "right") (world-move 1 0 w)]
-        [(equal? k "down") (world-jump-down w)]
-        [(equal? k "a") (world-rotate-ccw w)]
-        [(equal? k "s") (world-rotate-cw w)]
-        [else w]))
+        [(equal? k " ") (world-jump-down w)]
+        [(equal? k "down") (world-rotate-ccw w)]
+        [(equal? k "up") (world-rotate-cw w)]
+        [else
+         (begin
+           (printf "k: '~a'\n" k)
+           w)]))
 
 ;; -- visual
 
@@ -348,7 +356,7 @@
 
 
 (big-bang (world0)
-          (on-tick (λ (w) (next-world w)) 0.1)
+          (on-tick (λ (w) (next-world w)) 0.2) ;; 0.2 is the game speed
           (on-key (λ (w ke) (world-key-move w ke)))
           (to-draw (λ (w) (world->image w)))
           (stop-when (λ (w) (blocks-overflow? (world-blocks w)))))
