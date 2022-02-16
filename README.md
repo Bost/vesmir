@@ -37,6 +37,7 @@ pg_ctl -D ./var/pg -l ./var/log/postgres.log start
 set APP <...>
 heroku buildpacks:set https://github.com/lexi-lambda/heroku-buildpack-racket --app $APP
 heroku config:set RACKET_VERSION=8.3 --app $APP
+heroku config:set RUNTIME_ENV=heroku --app $APP
 # heroku config:set PAPERTRAIL_API_TOKEN=<papertrail-token>
 # heroku config:set BOT_TOKEN=<bot-token>
 git remote add heroku https://git.heroku.com/$APP.git
