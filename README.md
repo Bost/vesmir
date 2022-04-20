@@ -35,8 +35,9 @@ pg_ctl -D ./var/pg -l ./var/log/postgres.log start
 ## Run on / Deploy to Heroku
 ```fish
 set APP <heroku-app-name>
+set racketVer $(racket --version | grep --only-matching "[[:digit:]+]\.[[:digit:]+]")
 heroku buildpacks:set https://github.com/Bost/heroku-buildpack-racket --app $APP
-heroku config:set RACKET_VERSION=8.3 --app $APP
+heroku config:set RACKET_VERSION=$racketVer --app $APP
 heroku config:set RUNTIME_ENV=heroku --app $APP
 # heroku config:set PAPERTRAIL_API_TOKEN=<papertrail-token>
 # heroku config:set BOT_TOKEN=<bot-token>
@@ -48,15 +49,18 @@ git push heroku main
 ## Test Heroku
 ```fish
 curl --request  GET https://$APP.herokuapp.com/values
-curl --request POST -H 'Content-Type: application/json' -d '{"x":"1", "y":"2"}' \
-     https://$APP.herokuapp.com/values
+curl --request POST -H 'Content-Type: application/json' \
+     -d '{"x":"1", "y":"2"}' https://$APP.herokuapp.com/values
 ```
 
 ## Develop / Run locally
 ```fish
-raco pkg install racketscript
-# racks wumpus.rkt
-racks --force-recompile --skip-arity-checks --build-dir js-build racks/tetris.rkt
+raco pkg install --deps search-auto racketscript
+set racketVer $(racket --version | grep --only-matching "[[:digit:]+]\.[[:digit:]+]")
+set racksBin ~/.racket/$racketVer/bin/racks
+# rm -rf compiled/
+# $racksBin wumpus.rkt
+$racksBin --force-recompile --skip-arity-checks --build-dir js-build racks/tetris.rkt
 # racket --require server.rkt
 
 raco pkg install
