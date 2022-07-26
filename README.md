@@ -34,8 +34,8 @@ pg_ctl -D ./var/pg -l ./var/log/postgres.log start
 
 ## Run on / Deploy to Heroku
 ```fish
-set APP <...>
-heroku buildpacks:set https://github.com/lexi-lambda/heroku-buildpack-racket --app $APP
+set APP <heroku-app-name>
+heroku buildpacks:set https://github.com/Bost/heroku-buildpack-racket --app $APP
 heroku config:set RACKET_VERSION=8.3 --app $APP
 heroku config:set RUNTIME_ENV=heroku --app $APP
 # heroku config:set PAPERTRAIL_API_TOKEN=<papertrail-token>
@@ -56,7 +56,7 @@ curl --request POST -H 'Content-Type: application/json' -d '{"x":"1", "y":"2"}' 
 ```fish
 raco pkg install racketscript
 # racks wumpus.rkt
-racks --force-recompile --skip-arity-checks tetris.rkt
+racks --force-recompile --skip-arity-checks --build-dir js-build racks/tetris.rkt
 # racket --require server.rkt
 
 raco pkg install

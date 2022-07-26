@@ -12,8 +12,8 @@
 
 (require racket/list racket/bool)
 
-(require racketscript/htdp/image
-         racketscript/htdp/universe)
+;; (require racketscript/htdp/image racketscript/htdp/universe)
+(require 2htdp/image 2htdp/universe)
 
 (struct posn (x y))
 (struct block (x y color))
