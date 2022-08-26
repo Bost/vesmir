@@ -1,7 +1,10 @@
 #lang racket/gui
 
+;; M-x racket-run-and-switch-to-repl
+
 (require
  (prefix-in f: "files.rkt")
+ racket/function #| curry |#
  pict)
 
 (define (to-thumb dir f)
@@ -10,8 +13,9 @@
          [tf (string-append basedir "thumbs/" f)]
          [b (bitmap (read-bitmap fn))]
          [p (scale-to-fit b 150 150 #:mode 'preserve)])
-    (printf "fn: ~a\n" fn)
+    (printf "Converting ~a ...\n" fn)
     (send (pict->bitmap p) save-file tf 'jpeg)))
 
+#;(map (curry to-thumb f:kremnica-dir) f:files-kremnica)
 #;(map (curry to-thumb f:martin-dir) f:files-martin)
 #;(map (curry to-thumb f:krivan-dir) f:files-krivan)

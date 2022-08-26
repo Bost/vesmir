@@ -2,14 +2,21 @@
 
 ;; See https://defn.io/2020/02/12/racket-web-server-guide/
 
-(require
- (prefix-in f: "files.rkt")
- racket/function
- web-server/servlet
- web-server/servlet-env
- web-server/http
- racket/runtime-path
- )
+(require net/url
+         (prefix-in f: "files.rkt")
+         racket/function
+         web-server/dispatch
+         web-server/servlet
+         web-server/servlet-env
+         (prefix-in files: web-server/dispatchers/dispatch-files)
+         (prefix-in filter: web-server/dispatchers/dispatch-filter)
+         (prefix-in sequencer: web-server/dispatchers/dispatch-sequencer)
+         web-server/dispatchers/filesystem-map
+         web-server/http
+         web-server/servlet-dispatch
+         web-server/web-server
+         web-server/configuration/responders
+         )
 
 (define aws-s3 "https://vesmir.s3.eu-central-1.amazonaws.com")
 
@@ -25,9 +32,6 @@
          [a (list 'a a-attrs img)])
     a))
 
-(define (css-dir path) (string-append "static/" path))
-(define (js-dir path) (string-append "js-build/modules/" path))
-
 (define (response/template . content)
   (response/xexpr
    `(html
@@ -39,10 +43,14 @@
 (define (homepage req)
   (response/template
    `(div
-     ;; (p (a ([target "_blank"] [href "/martin"]) ,f:martin-dir))
-     ;; (p (a ([target "_blank"] [href "/krivan"]) ,f:krivan-dir))
-     ;; (p (a ([target "_blank"] [href "/wumpus"]) "wumpus"))
-     (p (a ([target "_blank"] [href "/tetris"]) "tetris")))))
+     (p (a ([target "_blank"] [href "/kremnica"]) ,f:kremnica-dir))
+     (p (a ([target "_blank"] [href "/martin"]) ,f:martin-dir))
+     (p (a ([target "_blank"] [href "/krivan"]) ,f:krivan-dir)))))
+
+(define (kremnica req)
+  (response/template
+   `(div
+     ,@(map (curry html-tag f:kremnica-dir) f:files-kremnica))))
 
 (define (martin req)
   (response/template
@@ -54,35 +62,15 @@
    `(div
      ,@(map (curry html-tag f:krivan-dir) f:files-krivan))))
 
-;; TODO siehe https://github.com/lexi-lambda/litpub/blob/2f326c1c0e/util/jsexpr.rkt
-(define (wumpus req)
-  (response/xexpr
-   `(html
-     (head
-      #;(meta ([charset "utf-8"]))
-      (meta ([http-equiv "content-type"] [content "text/html; charset=utf-8"]))
-      (script ([src "https://code.jquery.com/jquery-3.1.0.min.js"]
-               [integrity "sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="]
-               [crossorigin "anonymous"]))
-      (script ([src ,(js-dir "wumpus.rkt.js")] [type "module"]))
-      (link ([href ,(css-dir "screen.css")] [type "text/css"] [rel "stylesheet"])))
-     #;(body "wumpus"))))
-
-(define (tetris req)
-  (response/xexpr
-   `(html
-     (head
-      #;(meta ([charset "utf-8"]))
-      (meta ([http-equiv "content-type"] [content "text/html; charset=utf-8"]))
-      (script ([src "https://code.jquery.com/jquery-3.1.0.min.js"]
-               [integrity "sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="]
-               [crossorigin "anonymous"]))
-      (script ([src ,(js-dir "tetris.rkt.js")] [type "module"]))
-      (link ([href ,(css-dir "screen.css")] [type "text/css"] [rel "stylesheet"])))
-     #;(body "tetris"))))
-
 (define (not-found req)
   (response/template '(h1 "Not Found")))
+
+(define url->path/static (make-url->path "static"))
+
+(define static-dispatcher
+  (files:make #:url->path (lambda (u)
+                            (url->path/static
+                             (struct-copy url u [path (cdr (url-path u))])))))
 
 ;; the '/app/app/' is set by the buildpack
 ;; See:
@@ -96,29 +84,26 @@
 ;; log-info doesn't work
 #;(log-info "[log-info] root-path: ~a\n" root-path)
 ;; TODO root-path on heroku is just '/app/' WTF?
-;; (printf "[printf] root-path: ~a\n" root-path)
+(printf "[printf] root-path: ~a\n" root-path)
 
 (define-values (dispatch req)
   (dispatch-rules
-   [("") tetris]
-   ;; [("martin") martin]
-   ;; [("krivan") krivan]
-   [("wumpus")  wumpus]
-   [("tetris") tetris]
-   ;; Don’t include an `else` if serving any static files, otherwise filesystem
-   ;; server will never see the requests.
-   #;[else (error "Route does not exist:" req)]))
-
-;; on Heroku, the printf strings will be displayed only after(!) shutting down
-;; the app: heroku ps:scale web=0 --app $APP
-
-;; (define-runtime-path-list static-files-root '("./"))
-(define static-files-root (list root-path))
-(printf "[printf] static-files-root ~a\n" static-files-root)
+   [("")       #:method "get" homepage]
+   [("kremnica") #:method "get" kremnica]
+   [("martin") #:method "get" martin]
+   [("krivan") #:method "get" krivan]
+   ;; serving static content - see https://stackoverflow.com/q/37846248
+   [("screen.css") #:method "get" (λ (_)
+                                    (file-response 200 #"OK"
+                                                   (string-append
+                                                    root-path
+                                                    "static/screen.css")))]
+   [else (error "Route does not exist")]))
 
 (define port (if (getenv "PORT")
                  (string->number (getenv "PORT"))
                  8000))
+
 (printf "[printf] port: ~a\n" port)
 
 (serve/servlet
@@ -127,13 +112,34 @@
  ;; do not quit when the URL is "/quit"
  ;; #:quit? #f
  #:port port
- #:servlet-path ""    ; initial to show in browser
+ #:servlet-path "/"
+ #:server-root-path root-path
  #:listen-ip #f
  ;; capture top-level requests
  #:servlet-regexp #rx""
  ;; use serve/servlet in a start up script for a Web application, and don’t open
  ;; browser and don't print the DrRacket banner:
  #:command-line? #t
- #:extra-files-paths static-files-root
- #:file-not-found-responder not-found
  )
+
+#;(define stop
+  (serve
+   #:dispatch (sequencer:make
+               (filter:make #rx"^/static/" static-dispatcher)
+               (dispatch/servlet app)
+               (dispatch/servlet not-found))
+   #:listen-ip #f ;; "127.0.0.1"
+   #:port port
+   #:command-line? #t))
+
+#;(with-handlers ([exn:break? (lambda (e)
+                              (stop))])
+  (sync/enable-break never-evt))
+
+#;(serve/servlet
+ static-dispatcher
+ #:listen-ip "127.0.0.1"
+ #:port 8000
+ #:command-line? #t
+ #:servlet-path ""
+ #:servlet-regexp #rx"")
