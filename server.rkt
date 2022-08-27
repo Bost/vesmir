@@ -43,9 +43,38 @@
 (define (homepage req)
   (response/template
    `(div
+     (p (a ([target "_blank"] [href "/martin-zts"]) ,f:martin-zts-dir))
      (p (a ([target "_blank"] [href "/kremnica"]) ,f:kremnica-dir))
      (p (a ([target "_blank"] [href "/martin"]) ,f:martin-dir))
      (p (a ([target "_blank"] [href "/krivan"]) ,f:krivan-dir)))))
+
+#|
+;; create a macro out of response-fun
+(define (response-fun dir files)
+  (lambda (req)
+    (response/template
+     `(div
+       ,@(map (curry html-tag dir) files)))))
+
+(define-values (dispatch req)
+  (dispatch-rules
+   [("")           #:method "get" homepage]
+   [("kremnica")   #:method "get" (response-fun f:kremnica-dir f:files-kremnica)]
+   [("martin")     #:method "get" (response-fun f:martin-dir   f:files-martin)]
+   [("krivan")     #:method "get" (response-fun f:krivan-dir   f:files-krivan)]
+   ;; serving static content - see https://stackoverflow.com/q/37846248
+   [("screen.css") #:method "get" (lambda (_)
+                                    (file-response 200 #"OK"
+                                                   (string-append
+                                                    root-path
+                                                    "static/screen.css")))]
+   [else (error "Route does not exist")]))
+|#
+
+(define (martin-zts req)
+  (response/template
+   `(div
+     ,@(map (curry html-tag f:martin-zts-dir) f:files-martin-zts))))
 
 (define (kremnica req)
   (response/template
@@ -89,11 +118,12 @@
 (define-values (dispatch req)
   (dispatch-rules
    [("")       #:method "get" homepage]
+   [("martin-zts") #:method "get" martin-zts]
    [("kremnica") #:method "get" kremnica]
    [("martin") #:method "get" martin]
    [("krivan") #:method "get" krivan]
    ;; serving static content - see https://stackoverflow.com/q/37846248
-   [("screen.css") #:method "get" (λ (_)
+   [("screen.css") #:method "get" (lambda (_)
                                     (file-response 200 #"OK"
                                                    (string-append
                                                     root-path
