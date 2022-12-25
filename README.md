@@ -1,9 +1,14 @@
-## Install Heroku
+## Install / Update Heroku
 ```fish
 # on Ubuntu:
 # The `sudo snap install heroku --classic` doesn't work on Ubuntu
 # See https://github.com/heroku/cli/issues/822
+# https://devcenter.heroku.com/articles/heroku-cli#install-the-heroku-cli
 curl https://cli-assets.heroku.com/install.sh | sh
+# If the above doesn't work, try:
+curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+# When updating, if none of the above works, try:
+heroku update
 
 # on Guix:
 npm install -g heroku
