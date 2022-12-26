@@ -40,7 +40,7 @@
      (body
       ,@content))))
 
-(define (homepage req)
+(define (homepage _)
   (response/template
    `(div
      (p (a ([target "_blank"] [href "/martin-zts"]) ,f:martin-zts-dir))
@@ -71,27 +71,27 @@
    [else (error "Route does not exist")]))
 |#
 
-(define (martin-zts req)
+(define (martin-zts _)
   (response/template
    `(div
      ,@(map (curry html-tag f:martin-zts-dir) f:files-martin-zts))))
 
-(define (kremnica req)
+(define (kremnica _)
   (response/template
    `(div
      ,@(map (curry html-tag f:kremnica-dir) f:files-kremnica))))
 
-(define (martin req)
+(define (martin _)
   (response/template
    `(div
      ,@(map (curry html-tag f:martin-dir) f:files-martin))))
 
-(define (krivan req)
+(define (krivan _)
   (response/template
    `(div
      ,@(map (curry html-tag f:krivan-dir) f:files-krivan))))
 
-(define (not-found req)
+(define (not-found _)
   (response/template '(h1 "Not Found")))
 
 (define url->path/static (make-url->path "static"))
