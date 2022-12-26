@@ -3,6 +3,8 @@
 ;; See https://defn.io/2020/02/12/racket-web-server-guide/
 
 (require net/url
+         xml          ;; for make-cdata
+         response-ext ;; for response/file
          (prefix-in f: "files.rkt")
          racket/function
          web-server/dispatch
@@ -17,6 +19,70 @@
          web-server/web-server
          web-server/configuration/responders
          )
+
+(define gpath "static/gallery")
+
+(define (picture index total-count picture-name)
+  `(div ([class "mySlides"])
+       (div ([class "numbertext"]) ,(format "~a / ~a" index total-count))
+       (img ([src ,(string-append gpath "/" picture-name)]
+             [style "width:100%"]))))
+
+(define (thumbnail picture-name index desc)
+  `(div ([class "column"])
+       (img ([class "demo cursor"]
+             [src ,(string-append gpath "/" picture-name)]
+             [style "width:100%"]
+             [onclick ,(format "currentSlide(~a)" index)]
+             [alt ,desc]))))
+
+(define (response/gallery-template . content)
+  (response/xexpr
+   #:preamble #"<!DOCTYPE html>"
+   `(html
+     (head
+      (meta ([charset "utf-8"]))
+      (meta ([name "viewport"] [content "width=device-width, initial-scale=1"]))
+      (link ([rel "stylesheet"] [href ,(string-append gpath "/style.css")])))
+
+     (body
+      (h2 ([style "text-align:center"]) "Slideshow Gallery")
+      (div ([class "container"])
+           ,@(let* [(images f:files-gallery-wide)
+                    (count-images (length images))]
+               (map (lambda (i n) (picture i count-images n))
+                    (range 1 (+ 1 count-images))
+                    images))
+
+           (a ([class "prev"] [onclick "plusSlides(-1)"]) "❮")
+           (a ([class "next"] [onclick "plusSlides(1)"]) "❯")
+           (div ([class "caption-container"])
+                (p ([id "caption"])))
+
+           (div ([class "row"])
+                ,@(let* [(images f:files-gallery)
+                         (count-images (length images))
+                         (descs (make-list count-images ""))]
+                    (map thumbnail
+                         images
+                         (range 1 (+ 1 count-images))
+                         descs))))
+      #;
+      (script
+       ([type "text/javascript"])
+       ,(make-cdata
+         #f #f
+         "console.log('(1 > 2)', (1 > 2), '(1 < 2)', (1 < 2));"))
+
+      (script ([type "text/javascript"]
+               [src ,(string-append gpath "/script.js")]))))))
+
+(define (gallery _)
+  (response/gallery-template
+   `(div
+     ;; ,@(map (curry html-tag f:krivan-dir) f:files-gallery)
+     ))
+  )
 
 (define aws-s3 "https://vesmir.s3.eu-central-1.amazonaws.com")
 
@@ -37,10 +103,12 @@
    `(html
      (head
       (link ([href "/screen.css"] [type "text/css"] [rel "stylesheet"])))
-     (body
-      ,@content))))
+     (body ,@content))))
 
 (define (homepage _)
+  (response/gallery-template
+   `(div "homepage"))
+  #;
   (response/template
    `(div
      (p (a ([target "_blank"] [href "/martin-zts"]) ,f:martin-zts-dir))
@@ -115,6 +183,7 @@
 ;; TODO root-path on heroku is just '/app/' WTF?
 (printf "[printf] root-path: ~a\n" root-path)
 
+
 (define-values (dispatch req)
   (dispatch-rules
    [("")       #:method "get" homepage]
@@ -122,12 +191,31 @@
    [("kremnica") #:method "get" kremnica]
    [("martin") #:method "get" martin]
    [("krivan") #:method "get" krivan]
+   [("static" (string-arg) (string-arg))
+    #:method "get"
+    (lambda (_ g f)
+      #;(printf "[printf] g: ~a, f: ~a\n" g f)
+      (match f
+        ["script.js"
+         (begin
+           #;(printf "[printf] script.js; g: ~a, f: ~a\n" g f)
+           (response/file (string-append root-path "static/" g "/" f)
+                          #"application/javascript; charset=utf-8"))]
+        ["style.css"
+         (begin
+           #;(printf "[printf] style.css; g: ~a, f: ~a\n" g f)
+           (response/file (string-append root-path "static/" g "/" f)
+                          #"text/css; charset=utf-8"))]
+        [_
+         (file-response 200 #"OK"
+                        (string-append root-path "static/" g "/" f))])
+      )]
    ;; serving static content - see https://stackoverflow.com/q/37846248
-   [("screen.css") #:method "get" (lambda (_)
-                                    (file-response 200 #"OK"
-                                                   (string-append
-                                                    root-path
-                                                    "static/screen.css")))]
+   [("screen.css")
+    #:method "get"
+    (lambda (_)
+      (file-response 200 #"OK"
+                     (string-append root-path "static/screen.css")))]
    [else (error "Route does not exist")]))
 
 (define port (if (getenv "PORT")

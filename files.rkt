@@ -376,5 +376,25 @@
 (define krivan-dir (get-dir krivan))
 (define files-krivan (get-files krivan))
 
+(define files-gallery-wide
+  (list
+   "img_woods_wide.jpg"
+   "img_5terre_wide.jpg"
+   "img_mountains_wide.jpg"
+   "img_lights_wide.jpg"
+   "img_nature_wide.jpg"
+   "img_snow_wide.jpg"
+   ))
+
+(define files-gallery
+  (list
+   "img_woods.jpg"
+   "img_5terre.jpg"
+   "img_mountains.jpg"
+   "img_lights.jpg"
+   "img_nature.jpg"
+   "img_snow.jpg"))
+
+
 (provide (all-defined-out))
 #;(provide tags)

@@ -29,7 +29,7 @@ git push heroku main
 
 ## Develop / Run locally
 ```fish
-raco pkg install --deps search-auto racketscript
+raco pkg install --deps search-auto racketscript response-ext
 set racketVer $(racket --version | grep --only-matching "[[:digit:]+]\.[[:digit:]+]")
 set racksBin ~/.racket/$racketVer/bin/racks
 # rm -rf compiled/
